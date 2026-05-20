@@ -227,8 +227,7 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
                     file_path.unlink(missing_ok=True)
                     orchestrator_connection.log_info(f"Tjenestenummer {tjenestenummer} har ikke en personalemappe — springer over.")
                     continue
-                orchestrator_connection.log_trace(f"Fundet sags ID {case_id} for tjenestenummer {tjenestenummer}.") 
-                return
+
                 gem_fil_i_per_mappe(go_api_endpoint, go_api_username, go_api_password, case_id, file_path)
                 update_sql_information(engine, 4, RequestNumberServiceNow, attesttype_value)
                 file_path.unlink(missing_ok=True)
