@@ -120,7 +120,7 @@ def find_personale_mappe(go_api_endpoint, go_api_username, go_api_password, cpr_
             person_go_id=person_go_id,
             ssn=cpr
         )
-
+    
         if not cases_info:
             return None
 
@@ -175,6 +175,16 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
     go_api_endpoint = orchestrator_connection.get_constant("GO_API_ENDPOINT")
     go_api_username = orchestrator_connection.get_credential("BA_GO_API").username
     go_api_password = orchestrator_connection.get_credential("BA_GO_API").password
+
+    if not go_api_username:
+        orchestrator_connection.log_info("Fandt ikke go_api_username")
+    elif not go_api_password:
+        orchestrator_connection.log_info("Fandt ikke go_api_password")
+    elif not go_api_endpoint:
+        orchestrator_connection.log_info("Fandt ikke go_api_endpoint")
+    else:
+        orchestrator_connection.log_info("Fandt alle values til GO API")
+    return
 
     #Sætter stien til en temp mappe som notatet kan gemmes lokalt i
     TEMP_DIR = Path(r"C:\temp\attest_upload")
