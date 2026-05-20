@@ -6,7 +6,6 @@ import os
 
 from .goAPI.test_main import identify_employee_folders
 from .goAPI.case_handler import CaseHandler
-from .goAPI.helper_functions import contact_lookup, check_case_folder, get_salary_case_id_through_metadata
 from mbu_dev_shared_components.getorganized.objects import CaseDataJson
 from .goAPI.document_handler import DocumentHandler
 from .goAPI.journalize_process import journalize_file
@@ -103,42 +102,6 @@ def udfyld_word_ark(tjenestenummer, fornavn, efternavn, attest_modtaget_dato, at
     file_path = temp_dir / file_name
     doc.save(file_path)
     return file_path
-
-
-# def find_personale_mappe(go_api_endpoint, go_api_username, go_api_password, cpr_dicts):
-#     try:
-#         case_handler = CaseHandler(go_api_endpoint, go_api_username, go_api_password)
-#         case_data_handler = CaseDataJson()
-
-#         cpr = next(iter(cpr_dicts.keys()))
-
-#         person_full_name, person_go_id = contact_lookup(case_handler, cpr)
-
-#         cases_info = check_case_folder(
-#             case_data_handler=case_data_handler,
-#             case_handler=case_handler,
-#             case_type="PER",
-#             person_full_name=person_full_name,
-#             person_go_id=person_go_id,
-#             ssn=cpr
-#         )
-    
-#         if not cases_info:
-#             return None
-
-#         employee_folder_id = cases_info[0].get("CaseID")
-
-#         per_mappe_id = get_salary_case_id_through_metadata(
-#             case_handler=case_handler,
-#             employee_folder_id=employee_folder_id,
-#             case_title="Ansættelse og lønaftaler"
-#         )
-
-#         return per_mappe_id
-#     except Exception as e:
-#         cpr = next(iter(cpr_dicts.keys()), "UKENDT_CPR")
-#         print(f"Fejl ved forsøg på at finde per_mappe_id for CPR {cpr}: {e}")
-#         return None
 
 def fetch_case_id(cpr_dicts: dict, go_api_endpoint: str, go_api_username: str, go_api_password: str) -> str:
     case_data = CaseDataJson()
