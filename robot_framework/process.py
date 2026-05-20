@@ -140,9 +140,9 @@ def udfyld_word_ark(tjenestenummer, fornavn, efternavn, attest_modtaget_dato, at
 #         print(f"Fejl ved forsøg på at finde per_mappe_id for CPR {cpr}: {e}")
 #         return None
 
-def fetch_case_id(cpr_dicts: dict, GO_API_ENDPOINT, GO_API_USERNAME, GO_API_PASSWORD) -> str:
+def fetch_case_id(cpr_dicts: dict, go_api_endpoint: str, go_api_username: str, go_api_password: str) -> str:
     case_data = CaseDataJson()
-    case_handler = CaseHandler(GO_API_ENDPOINT, GO_API_USERNAME, GO_API_PASSWORD)
+    case_handler = CaseHandler(go_api_endpoint, go_api_username, go_api_password)
     case_id = identify_employee_folders(
         case_handler=case_handler,
         case_data_handler=case_data,
@@ -187,7 +187,7 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
     orchestrator_connection.log_trace("Running process.")
 
     #Henter credentials til API bruger til GO:
-    go_api_endpoint = orchestrator_connection.get_constant("GO_API_ENDPOINT")
+    go_api_endpoint = orchestrator_connection.get_constant("GO_API_ENDPOINT").value
     go_api_username = orchestrator_connection.get_credential("BA_GO_API").username
     go_api_password = orchestrator_connection.get_credential("BA_GO_API").password
 
