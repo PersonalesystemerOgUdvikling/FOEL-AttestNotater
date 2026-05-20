@@ -117,7 +117,13 @@ def journalize_file(
             )
 
             response = document_handler.upload_document(document_data, '/_goapi/Documents/AddToCase')
-            
+
+            print(f"response: {response}")
+            print(f"response.ok: {response.ok}")
+            print(f"response.status_code: {response.status_code}")
+            print(f"response.text: {response.text}")
+            print(f"response.json(): {response.json()}\n")
+
             upload_attempts += 1
 
             if response.ok:

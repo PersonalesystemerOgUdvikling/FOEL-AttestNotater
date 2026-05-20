@@ -3,11 +3,13 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 from docx import Document
 import os
-from .case_handler import CaseHandler
-from .helper_functions import contact_lookup, check_case_folder, get_salary_case_id_through_metadata
+
+from .goAPI.test_main import identify_employee_folders
+from .goAPI.case_handler import CaseHandler
+from .goAPI.helper_functions import contact_lookup, check_case_folder, get_salary_case_id_through_metadata
 from mbu_dev_shared_components.getorganized.objects import CaseDataJson
-from .document_handler import DocumentHandler
-from .journalize_process import journalize_file
+from .goAPI.document_handler import DocumentHandler
+from .goAPI.journalize_process import journalize_file
 from io import BytesIO
 from docx.shared import RGBColor
 from pathlib import Path
@@ -103,41 +105,54 @@ def udfyld_word_ark(tjenestenummer, fornavn, efternavn, attest_modtaget_dato, at
     return file_path
 
 
-def find_personale_mappe(go_api_endpoint, go_api_username, go_api_password, cpr_dicts):
-    try:
-        case_handler = CaseHandler(go_api_endpoint, go_api_username, go_api_password)
-        case_data_handler = CaseDataJson()
+# def find_personale_mappe(go_api_endpoint, go_api_username, go_api_password, cpr_dicts):
+#     try:
+#         case_handler = CaseHandler(go_api_endpoint, go_api_username, go_api_password)
+#         case_data_handler = CaseDataJson()
 
-        cpr = next(iter(cpr_dicts.keys()))
+#         cpr = next(iter(cpr_dicts.keys()))
 
-        person_full_name, person_go_id = contact_lookup(case_handler, cpr)
+#         person_full_name, person_go_id = contact_lookup(case_handler, cpr)
 
-        cases_info = check_case_folder(
-            case_data_handler=case_data_handler,
-            case_handler=case_handler,
-            case_type="PER",
-            person_full_name=person_full_name,
-            person_go_id=person_go_id,
-            ssn=cpr
-        )
+#         cases_info = check_case_folder(
+#             case_data_handler=case_data_handler,
+#             case_handler=case_handler,
+#             case_type="PER",
+#             person_full_name=person_full_name,
+#             person_go_id=person_go_id,
+#             ssn=cpr
+#         )
     
-        if not cases_info:
-            return None
+#         if not cases_info:
+#             return None
 
-        employee_folder_id = cases_info[0].get("CaseID")
+#         employee_folder_id = cases_info[0].get("CaseID")
 
-        per_mappe_id = get_salary_case_id_through_metadata(
-            case_handler=case_handler,
-            employee_folder_id=employee_folder_id,
-            case_title="Ansættelse og lønaftaler"
-        )
+#         per_mappe_id = get_salary_case_id_through_metadata(
+#             case_handler=case_handler,
+#             employee_folder_id=employee_folder_id,
+#             case_title="Ansættelse og lønaftaler"
+#         )
 
-        return per_mappe_id
-    except Exception as e:
-        cpr = next(iter(cpr_dicts.keys()), "UKENDT_CPR")
-        print(f"Fejl ved forsøg på at finde per_mappe_id for CPR {cpr}: {e}")
-        return None
+#         return per_mappe_id
+#     except Exception as e:
+#         cpr = next(iter(cpr_dicts.keys()), "UKENDT_CPR")
+#         print(f"Fejl ved forsøg på at finde per_mappe_id for CPR {cpr}: {e}")
+#         return None
 
+def fetch_case_id(cpr_dicts: dict, GO_API_ENDPOINT, GO_API_USERNAME, GO_API_PASSWORD) -> str:
+    case_data = CaseDataJson()
+    case_handler = CaseHandler(GO_API_ENDPOINT, GO_API_USERNAME, GO_API_PASSWORD)
+    case_id = identify_employee_folders(
+        case_handler=case_handler,
+        case_data_handler=case_data,
+        case_type="PER",
+        case_title="Lønbilag",
+        cpr_dicts=cpr_dicts,
+    )
+    if not case_id:
+        raise ValueError("No CaseID found")
+    return case_id
 
 def gem_fil_i_per_mappe(go_api_endpoint, go_api_username, go_api_password, per_mappe_id, fil_sti):
     try:
@@ -176,16 +191,6 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
     go_api_username = orchestrator_connection.get_credential("BA_GO_API").username
     go_api_password = orchestrator_connection.get_credential("BA_GO_API").password
 
-    if not go_api_username:
-        orchestrator_connection.log_info("Fandt ikke go_api_username")
-    elif not go_api_password:
-        orchestrator_connection.log_info("Fandt ikke go_api_password")
-    elif not go_api_endpoint:
-        orchestrator_connection.log_info("Fandt ikke go_api_endpoint")
-    else:
-        orchestrator_connection.log_info("Fandt alle values til GO API")
-    return
-
     #Sætter stien til en temp mappe som notatet kan gemmes lokalt i
     TEMP_DIR = Path(r"C:\temp\attest_upload")
     TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -215,14 +220,16 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
                 fornavn, efternavn = name.split(" ", 1)
                 file_path = udfyld_word_ark(tjenestenummer, fornavn, efternavn, attest_modtaget_dato, attesttype_value, att_id, TEMP_DIR)
                 cpr_dict = {cpr: {"tjenestenummer": str(tjenestenummer), "navn": "", "stilling": ""}}
-                personale_mappe = find_personale_mappe(go_api_endpoint, go_api_username, go_api_password, cpr_dict)
+                case_id  = fetch_case_id(cpr_dict, go_api_endpoint, go_api_username, go_api_password)
+                # personale_mappe = find_personale_mappe(go_api_endpoint, go_api_username, go_api_password, cpr_dict)
 
-                if not personale_mappe:
+                if not case_id:
                     file_path.unlink(missing_ok=True)
                     orchestrator_connection.log_info(f"Tjenestenummer {tjenestenummer} har ikke en personalemappe — springer over.")
                     continue
-
-                gem_fil_i_per_mappe(go_api_endpoint, go_api_username, go_api_password, personale_mappe, file_path)
+                orchestrator_connection.log_trace(f"Fundet sags ID {case_id} for tjenestenummer {tjenestenummer}.") 
+                return
+                gem_fil_i_per_mappe(go_api_endpoint, go_api_username, go_api_password, case_id, file_path)
                 update_sql_information(engine, 4, RequestNumberServiceNow, attesttype_value)
                 file_path.unlink(missing_ok=True)
                 counter += 1

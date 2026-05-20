@@ -18,6 +18,12 @@ class DatabaseError(Exception):
 class RequestError(Exception):
     """Custom exception for request related errors."""
 
+def mask_cpr(cpr):
+    if not cpr:
+        return "<missing>"
+    cpr = str(cpr)
+    return "***" + cpr[-4:]
+
 
 def contact_lookup(case_handler: CaseHandler, ssn: str) -> Optional[Tuple[str, str]]:
     """
@@ -31,7 +37,13 @@ def contact_lookup(case_handler: CaseHandler, ssn: str) -> Optional[Tuple[str, s
     response = case_handler.contact_lookup(ssn, '/personalemapper/_goapi/contacts/readitem')
 
     if not response.ok:
-        raise RequestError("Request response failed.")
+        raise RequestError(
+            f"GO API contact lookup failed. "
+            f"Status code: {response.status_code}. "
+            f"Response body: {response.text[:1000]}. "
+            f"Case handler: {case_handler}. "
+            f"CPR: {mask_cpr(ssn)}."
+    )
 
     person_data = response.json()
 

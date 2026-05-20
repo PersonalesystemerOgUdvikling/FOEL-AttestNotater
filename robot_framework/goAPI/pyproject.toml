@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=65.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "masseforsendelse"
+version = "0.0.2"
+authors = [
+  { name = "ddj", email = "dadj@aarhus.dk" },
+]
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+]
+dependencies = [
+    "OpenOrchestrator == 1.*",
+    "Pillow == 11.1.0",
+    "MBU-dev-shared-components >= 1.0.1",
+    "itk-dev-shared-components == 2.8.*",
+    "portalocker",
+    "pandas"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pylint",
+  "flake8",
+  "portalocker"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["handle_journalization", "identify_employee_folders"]
