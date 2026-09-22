@@ -169,6 +169,11 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
     try:
         for rows in df.itertuples(index=False):
             try:
+                counter += 1
+                if counter > 10:
+                    break
+
+
                 tjenestenummer = str(rows.Medarbejdernr).strip()
                 orchestrator_connection.log_trace(f"Behandler tjenestenummer: {tjenestenummer}")
                 cpr = str(rows.CPR).strip()
@@ -191,11 +196,10 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
                 gem_fil_i_per_mappe(go_api_endpoint, go_api_username, go_api_password, case_id, file_path)
                 update_sql_information(engine, 4, RequestNumberServiceNow, attesttype_value)
                 file_path.unlink(missing_ok=True)
-                counter += 1
+                
                 orchestrator_connection.log_trace(f"Færdig med nr. {counter}")
                 orchestrator_connection.log_trace(f"case_id: {case_id}, tjenestenummer: {tjenestenummer}, cpr: {cpr}")
-                if counter > 1:
-                    break
+
 
             except Exception as e:
                 orchestrator_connection.log_error(f"Fejl ved behandling af {tjenestenummer}: {e}")
