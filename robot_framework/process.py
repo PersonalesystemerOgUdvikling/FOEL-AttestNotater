@@ -169,11 +169,6 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
     try:
         for rows in df.itertuples(index=False):
             try:
-                counter += 1
-                if counter > 10:
-                    break
-
-
                 tjenestenummer = str(rows.Medarbejdernr).strip()
                 orchestrator_connection.log_trace(f"Behandler tjenestenummer: {tjenestenummer}")
                 cpr = str(rows.CPR).strip()
