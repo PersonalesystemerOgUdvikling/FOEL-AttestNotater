@@ -128,11 +128,11 @@ def identify_correct_case_by_employment_code(case_handler: CaseHandler, salary_c
         formatted_res = parse_metadata(metadata_str=response.json().get("Metadata"))
 
         # One of the metadata keys is "ows_EmploymentCode", which contains the employment code, related to the case - we check if this key matches the tjenestenummer we are looking for
-        if tjenestenummer in formatted_res.get("ows_EmploymentCode"):
+        employment_code = formatted_res.get("ows_EmploymentCode")
+        if employment_code and tjenestenummer in employment_code:
             matching_case_ids.append(case_id)
-
+ 
     return matching_case_ids
-
 
 def get_salary_case_id_through_metadata(case_handler: CaseHandler, employee_folder_id: str, case_title: str):
     """
