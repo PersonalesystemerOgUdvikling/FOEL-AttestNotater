@@ -110,11 +110,9 @@ def fetch_case_id(cpr_dicts: dict, go_api_endpoint: str, go_api_username: str, g
         case_handler=case_handler,
         case_data_handler=case_data,
         case_type="PER",
-        case_title="Lønbilag",
+        case_title="Ansættelse og lønaftaler",
         cpr_dicts=cpr_dicts,
     )
-    if not case_id:
-        raise ValueError("No CaseID found")
     return case_id
 
 def gem_fil_i_per_mappe(go_api_endpoint, go_api_username, go_api_password, per_mappe_id, fil_sti):
