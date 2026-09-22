@@ -182,7 +182,6 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
                 file_path = udfyld_word_ark(tjenestenummer, fornavn, efternavn, attest_modtaget_dato, attesttype_value, att_id, TEMP_DIR)
                 cpr_dict = {cpr: {"tjenestenummer": str(tjenestenummer), "navn": "", "stilling": ""}}
                 case_id  = fetch_case_id(cpr_dict, go_api_endpoint, go_api_username, go_api_password)
-                # personale_mappe = find_personale_mappe(go_api_endpoint, go_api_username, go_api_password, cpr_dict)
 
                 if not case_id:
                     file_path.unlink(missing_ok=True)

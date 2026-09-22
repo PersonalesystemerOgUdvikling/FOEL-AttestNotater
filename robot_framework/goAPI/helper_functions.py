@@ -109,10 +109,12 @@ def check_case_folder(
 
 def identify_correct_case_by_employment_code(case_handler: CaseHandler, salary_case_info: list, tjenestenummer: str):
     """
-    functiuon doc string
+    Returns a list of CaseIDs whose ows_EmploymentCode metadata matches tjenestenummer.
+    Does NOT stop at the first match - the caller needs to know if more than one case matched,
+    since that means the data is ambiguous and should not be silently resolved.
     """
-    correct_salary_case_id = None
-    # We start by iterating through the salary_case_info, which is a list of dictionaries, where each dictionary contains information about a case
+    matching_case_ids = []
+
     for case in salary_case_info:
         case_id = case.get("CaseID")
 
@@ -127,11 +129,9 @@ def identify_correct_case_by_employment_code(case_handler: CaseHandler, salary_c
 
         # One of the metadata keys is "ows_EmploymentCode", which contains the employment code, related to the case - we check if this key matches the tjenestenummer we are looking for
         if tjenestenummer in formatted_res.get("ows_EmploymentCode"):
-            correct_salary_case_id = case_id
+            matching_case_ids.append(case_id)
 
-            break
-
-    return correct_salary_case_id
+    return matching_case_ids
 
 
 def get_salary_case_id_through_metadata(case_handler: CaseHandler, employee_folder_id: str, case_title: str):
