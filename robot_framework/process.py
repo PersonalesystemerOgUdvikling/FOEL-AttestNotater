@@ -194,7 +194,7 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
                 file_path.unlink(missing_ok=True)
                 counter += 1
                 orchestrator_connection.log_trace(f"Færdig med nr. {counter}")
-
+                orchestrator_connection.log_trace(f"case_id: {case_id}, tjenestenummer: {tjenestenummer}, cpr: {cpr}")
                 if counter > 1:
                     break
 
