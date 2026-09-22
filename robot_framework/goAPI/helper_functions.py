@@ -111,7 +111,7 @@ def identify_correct_case_by_employment_code(case_handler: CaseHandler, salary_c
     """
     functiuon doc string
     """
-
+    correct_salary_case_id = None
     # We start by iterating through the salary_case_info, which is a list of dictionaries, where each dictionary contains information about a case
     for case in salary_case_info:
         case_id = case.get("CaseID")
