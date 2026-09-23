@@ -183,6 +183,12 @@ def process(orchestrator_connection: OrchestratorConnection, queue_element: Queu
                 cpr_dict = {cpr: {"tjenestenummer": str(tjenestenummer), "navn": "", "stilling": ""}}
                 case_id  = fetch_case_id(cpr_dict, go_api_endpoint, go_api_username, go_api_password)
 
+                # Quick fix solution. In case more than 1 case is found, we will simply skip the case
+                if case_id == "MultipleCasesFound":
+                    file_path.unlink(missing_ok=True)
+                    orchestrator_connection.log_info(f"Fandt flere case_ids for CPR {cpr}, der matcher tjenestenummer {tjenestenummer}. Springer over")
+                    continue
+
                 if not case_id:
                     file_path.unlink(missing_ok=True)
                     orchestrator_connection.log_info(f"Tjenestenummer {tjenestenummer} har ikke en personalemappe — springer over.")

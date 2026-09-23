@@ -72,6 +72,7 @@ def identify_employee_folders(
         )
 
         if len(matching_case_ids) > 1:
+            return "MultipleCasesFound"  # Return a specific string to indicate multiple cases found
             raise LookupError(
                 f"Fandt {len(matching_case_ids)} sager for CPR {cpr}, der matcher tjenestenummer {tjenestenummer} "
                 f"- forventede præcis 1. Matches: {matching_case_ids}"
